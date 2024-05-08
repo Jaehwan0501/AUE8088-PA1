@@ -13,6 +13,7 @@ import torch
 
 # Custom packages
 from src.metric import MyAccuracy
+from src.metric import MyF1Score
 import src.config as cfg
 from src.util import show_setting
 
@@ -56,6 +57,7 @@ class SimpleClassifier(LightningModule):
 
         # Metric
         self.accuracy = MyAccuracy()
+        self.f1_score = MyF1Score()
 
         # Hyperparameters
         self.save_hyperparameters()
@@ -79,14 +81,16 @@ class SimpleClassifier(LightningModule):
     def training_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch)
         accuracy = self.accuracy(scores, y)
-        self.log_dict({'loss/train': loss, 'accuracy/train': accuracy},
+        f1_score = self.f1_score(scores, y)
+        self.log_dict({'loss/train': loss, 'accuracy/train': accuracy, 'f1_score/train': f1_score},
                       on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch)
         accuracy = self.accuracy(scores, y)
-        self.log_dict({'loss/val': loss, 'accuracy/val': accuracy},
+        f1_score = self.f1_score(scores, y)
+        self.log_dict({'loss/val': loss, 'accuracy/val': accuracy, 'f1_score/val': f1_score},
                       on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self._wandb_log_image(batch, batch_idx, scores, frequency = cfg.WANDB_IMG_LOG_FREQ)
 
