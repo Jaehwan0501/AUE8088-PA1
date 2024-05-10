@@ -7,7 +7,7 @@ VAL_EVERY_N_EPOCH   = 1
 
 NUM_EPOCHS          = 60
 OPTIMIZER_PARAMS    = {'type': 'Adam', 'lr': 0.001} # {'type': 'Adam', 'lr': 0.001}
-SCHEDULER_PARAMS    = {'type': 'MultiStepLR', 'milestones': [45, 55], 'gamma': 0.8} # {'type': 'MultiStepLR', 'milestones': [45, 55], 'gamma': 0.2}
+SCHEDULER_PARAMS    = {'type': 'MultiStepLR', 'milestones': [45, 55], 'gamma': 0.5} # {'type': 'MultiStepLR', 'milestones': [45, 55], 'gamma': 0.2}
 
 # Dataaset
 DATASET_ROOT_PATH   = 'datasets/'
@@ -22,11 +22,11 @@ IMAGE_MEAN          = [0.4802, 0.4481, 0.3975]
 IMAGE_STD           = [0.2302, 0.2265, 0.2262]
 
 # Network
-MODEL_NAME          = 'MyNetwork' # resnet18, MyNetwork
+MODEL_NAME          = 'resnext50_32x4d' # resnet18, MyNetwork, vgg11
 
 # Compute related
 ACCELERATOR         = 'gpu'
-DEVICES             = [1]
+DEVICES             = [0]
 PRECISION_STR       = '32-true'
 
 # Logging
