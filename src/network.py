@@ -24,6 +24,36 @@ class MyNetwork(AlexNet):
         super().__init__()
 
         # [TODO] Modify feature extractor part in AlexNet
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(True),
+            nn.BatchNorm2d(64),#####
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 192, kernel_size=5, padding=2),
+            nn.ReLU(True),
+            nn.BatchNorm2d(192),#####
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.ReLU(True),
+            nn.BatchNorm2d(384),#####
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.ReLU(True),
+            nn.BatchNorm2d(256),#####
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(True),
+            nn.BatchNorm2d(256),#####
+            nn.MaxPool2d(kernel_size=3, stride=2),
+        )
+        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
+        self.classifier = nn.Sequential(
+            nn.Dropout(p=0.3),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(True),
+            nn.Dropout(p=0.3),
+            nn.Linear(4096, 4096),
+            nn.ReLU(True),
+            nn.Linear(4096, cfg.NUM_CLASSES),
+        )
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -57,7 +87,8 @@ class SimpleClassifier(LightningModule):
 
         # Metric
         self.accuracy = MyAccuracy()
-        self.f1_score = MyF1Score()
+        self.f1_score_train = MyF1Score()
+        self.f1_score_val = MyF1Score()
 
         # Hyperparameters
         self.save_hyperparameters()
@@ -81,7 +112,7 @@ class SimpleClassifier(LightningModule):
     def training_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch)
         accuracy = self.accuracy(scores, y)
-        f1_score = self.f1_score(scores, y)
+        f1_score = self.f1_score_train(scores, y)
         self.log_dict({'loss/train': loss, 'accuracy/train': accuracy, 'f1_score/train': f1_score},
                       on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return loss
@@ -89,7 +120,7 @@ class SimpleClassifier(LightningModule):
     def validation_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch)
         accuracy = self.accuracy(scores, y)
-        f1_score = self.f1_score(scores, y)
+        f1_score = self.f1_score_val(scores, y)
         self.log_dict({'loss/val': loss, 'accuracy/val': accuracy, 'f1_score/val': f1_score},
                       on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self._wandb_log_image(batch, batch_idx, scores, frequency = cfg.WANDB_IMG_LOG_FREQ)
